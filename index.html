@@ -76,7 +76,7 @@
     <p id="message" class="error"></p>
 
     <script>
-        fetch("./logs.json")
+   fetch("https://anuszia11-cmyk.github.io/apache-log-viewer/logs.json")
             .then(response => {
                 if (!response.ok) {
                     throw new Error("Could not load logs.json");
