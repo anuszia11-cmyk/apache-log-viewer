@@ -1,42 +1,38 @@
-# WoodCraft Furniture Log Monitoring and Incident Detection
+## Threat detection (`detect.py`)
 
-## Project Overview
+`detect.py` scans the server log and flags suspicious activity using two rule-based alerts. It needs only Python 3.8+ (no extra packages).
 
-This beginner-level cybersecurity project demonstrates a simple web-based server log viewer for WoodCraft Furniture.
+### How to run
 
-The project uses sample server logs stored in JSON format and displays the first 10 entries in an HTML table.
+```bash
+python detect.py                    # scans logs.json, writes alerts.json
+python detect.py attack_logs.json   # scan a different log file
+```
 
-## Features
+### Detection rules
 
-- Generates 20 sample log entries using Python.
-- Stores log data in `logs.json`.
-- Displays IP addresses, timestamps, requests, status codes, and response sizes.
-- Uses HTML, CSS, and JavaScript to display the logs.
+| ID | Rule | Triggers when | Severity |
+|----|------|---------------|----------|
+| R1 | 404 scan | one IP gets 4+ `404 Not Found` responses within 5 minutes | Medium |
+| R2 | Brute-force login | one IP has 3+ failed logins (401/403 on a login URL, or a "Failed password" message) within 10 minutes | High |
 
-## Technologies Used
+The thresholds are in the `SETTINGS` block at the top of `detect.py` and can be tuned.
 
-- Python
-- HTML
-- CSS
-- JavaScript
-- JSON
-- GitHub Pages
+### Output
 
-## Project Files
+- **Console**: one line per alert plus a total, e.g. `10 suspicious entries found in 2 alert(s)`.
+- **alerts.json**: a list of alerts. Each alert has the rule, severity, IP, first/last time seen, a description, and the log lines that triggered it.
 
-- `generate_logs.py`: Generates sample log data.
-- `logs.json`: Stores 20 sample log entries.
-- `index.html`: Displays the first 10 log entries.
-- `README.md`: Documents the project.
+### Results on the sample logs
 
-## How to Run Locally
+Running on `logs.json` raises 2 alerts:
 
-1. Install Python 3.
-2. Run `python generate_logs.py` to generate `logs.json`.
-3. Open the project folder in VS Code.
-4. Start a local server using the Live Server extension.
-5. Open the displayed local URL in your browser.
+- **R2** — `203.0.113.45` made 5 failed logins in 39 seconds
+- **R1** — `198.51.100.23` requested 5 pages that don't exist (`/admin`, `/.env`, `/backup.zip` …) in 79 seconds
 
-## Disclaimer
+The sample also contains activity that should **not** trigger, to show the rules avoid false alarms: a staff member mistyping their password once, a single broken link, and an IP whose four 404s are spread over 18 minutes.
 
-This project uses simulated log data for educational purposes. It is not a production security monitoring system.
+### Limitations
+
+- Many web apps answer a wrong password with `200 OK` and an error message, which an access log can't tell apart from success. R2 relies on the server returning 401/403.
+- If the portal sits behind a proxy, every request may show the proxy's IP; the real client IP would need to be logged.
