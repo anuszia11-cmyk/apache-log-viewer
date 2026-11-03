@@ -1,0 +1,98 @@
+[
+  {
+    "alert_id": "ALERT-001",
+    "rule_id": "R2",
+    "rule": "Brute-force login",
+    "severity": "HIGH",
+    "ip": "203.0.113.45",
+    "count": 5,
+    "first_seen": "2026-10-30 09:20:02",
+    "last_seen": "2026-10-30 09:20:41",
+    "description": "5 failed login attempts from 203.0.113.45 in 39s - possible password guessing (rule: 3+ within 10 min)",
+    "entries": [
+      {
+        "ip": "203.0.113.45",
+        "timestamp": "30/Oct/2026:09:20:02 +0000",
+        "request": "POST /login HTTP/1.1",
+        "status": 401,
+        "size": 298
+      },
+      {
+        "ip": "203.0.113.45",
+        "timestamp": "30/Oct/2026:09:20:09 +0000",
+        "request": "POST /login HTTP/1.1",
+        "status": 401,
+        "size": 298
+      },
+      {
+        "ip": "203.0.113.45",
+        "timestamp": "30/Oct/2026:09:20:17 +0000",
+        "request": "POST /login HTTP/1.1",
+        "status": 401,
+        "size": 298
+      },
+      {
+        "ip": "203.0.113.45",
+        "timestamp": "30/Oct/2026:09:20:26 +0000",
+        "request": "POST /login HTTP/1.1",
+        "status": 401,
+        "size": 298
+      },
+      {
+        "ip": "203.0.113.45",
+        "timestamp": "30/Oct/2026:09:20:41 +0000",
+        "request": "POST /login HTTP/1.1",
+        "status": 401,
+        "size": 298
+      }
+    ]
+  },
+  {
+    "alert_id": "ALERT-002",
+    "rule_id": "R1",
+    "rule": "404 scan",
+    "severity": "MEDIUM",
+    "ip": "198.51.100.23",
+    "count": 5,
+    "first_seen": "2026-10-30 09:10:01",
+    "last_seen": "2026-10-30 09:11:20",
+    "description": "5 '404 Not Found' responses to 198.51.100.23 in 1m 19s - possible scan for hidden pages (rule: 4+ within 5 min)",
+    "entries": [
+      {
+        "ip": "198.51.100.23",
+        "timestamp": "30/Oct/2026:09:10:01 +0000",
+        "request": "GET /admin HTTP/1.1",
+        "status": 404,
+        "size": 312
+      },
+      {
+        "ip": "198.51.100.23",
+        "timestamp": "30/Oct/2026:09:10:15 +0000",
+        "request": "GET /wp-login.php HTTP/1.1",
+        "status": 404,
+        "size": 312
+      },
+      {
+        "ip": "198.51.100.23",
+        "timestamp": "30/Oct/2026:09:10:31 +0000",
+        "request": "GET /.env HTTP/1.1",
+        "status": 404,
+        "size": 312
+      },
+      {
+        "ip": "198.51.100.23",
+        "timestamp": "30/Oct/2026:09:10:48 +0000",
+        "request": "GET /backup.zip HTTP/1.1",
+        "status": 404,
+        "size": 312
+      },
+      {
+        "ip": "198.51.100.23",
+        "timestamp": "30/Oct/2026:09:11:20 +0000",
+        "request": "GET /phpmyadmin/ HTTP/1.1",
+        "status": 404,
+        "size": 312
+      }
+    ]
+  }
+]
