@@ -1,0 +1,74 @@
+[
+  {
+    "ip": "203.0.113.45",
+    "timestamp": "2026-11-07T13:46:45Z",
+    "request": "SSH login bandit1@bandit.labs.overthewire.org:2220",
+    "status": 401,
+    "size": 0,
+    "service": "sshd",
+    "username": "bandit1",
+    "event": "failed_login",
+    "message": "sshd[7706]: Failed password for bandit1 from 203.0.113.45 port 64634 ssh2",
+    "source": "OverTheWire Bandit lab - real attempt, simulated source IP"
+  },
+  {
+    "ip": "203.0.113.45",
+    "timestamp": "2026-11-07T13:47:25Z",
+    "request": "SSH login bandit1@bandit.labs.overthewire.org:2220",
+    "status": 401,
+    "size": 0,
+    "service": "sshd",
+    "username": "bandit1",
+    "event": "failed_login",
+    "message": "sshd[6358]: Failed password for bandit1 from 203.0.113.45 port 60054 ssh2",
+    "source": "OverTheWire Bandit lab - real attempt, simulated source IP"
+  },
+  {
+    "ip": "198.51.100.10",
+    "timestamp": "2026-11-07T13:47:34Z",
+    "request": "SSH login bandit1@bandit.labs.overthewire.org:2220",
+    "status": 200,
+    "size": 0,
+    "service": "sshd",
+    "username": "bandit1",
+    "event": "login_success",
+    "message": "sshd[11954]: Accepted password for bandit1 from 198.51.100.10 port 58220 ssh2",
+    "source": "OverTheWire Bandit lab - real attempt, simulated source IP"
+  },
+  {
+    "ip": "198.51.100.10",
+    "timestamp": "2026-11-07T13:48:28Z",
+    "request": "SSH login bandit1@bandit.labs.overthewire.org:2220",
+    "status": 200,
+    "size": 0,
+    "service": "sshd",
+    "username": "bandit1",
+    "event": "login_success",
+    "message": "sshd[25777]: Accepted password for bandit1 from 198.51.100.10 port 51689 ssh2",
+    "source": "OverTheWire Bandit lab - real attempt, simulated source IP"
+  },
+  {
+    "ip": "198.51.100.10",
+    "timestamp": "2026-11-07T13:50:44Z",
+    "request": "SSH login admin@bandit.labs.overthewire.org:2220",
+    "status": 200,
+    "size": 0,
+    "service": "sshd",
+    "username": "admin",
+    "event": "login_success",
+    "message": "sshd[4643]: Accepted password for admin from 198.51.100.10 port 59179 ssh2",
+    "source": "OverTheWire Bandit lab - real attempt, simulated source IP"
+  },
+  {
+    "ip": "198.51.100.10",
+    "timestamp": "2026-11-07T13:52:10Z",
+    "request": "SSH login admin@bandit.labs.overthewire.org:2220",
+    "status": 200,
+    "size": 0,
+    "service": "sshd",
+    "username": "admin",
+    "event": "login_success",
+    "message": "sshd[20133]: Accepted password for admin from 198.51.100.10 port 56095 ssh2",
+    "source": "OverTheWire Bandit lab - real attempt, simulated source IP"
+  }
+]
