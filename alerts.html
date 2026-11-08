@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alerts | WoodCraft Log Monitor</title>
+
+  <!--
+    alerts.html - shows the entries that detect.py flagged.
+    How it works, in one sentence: the browser downloads alerts.json with fetch(),
+    turns each alert into a table row, and fills in the summary numbers at the top.
+    No server-side code is needed, which is why it runs on GitHub Pages.
+  -->
+
+  <style>
+    :root {
+      --bg: #f7f5f2;
+      --card: #ffffff;
+      --ink: #2a2420;
+      --muted: #6d645c;
+      --line: #e6e0d9;
+      --brand: #6f4426;      /* wood brown */
+      --brand-ink: #ffffff;
+      --danger: #b42318;
+      --danger-bg: #fdecea;
+      --warn: #9a4a07;
+      --warn-bg: #fff4e5;
+      --ok: #1f6f3f;
+      --ok-bg: #e8f5ec;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    /* ---------- top navigation bar (same block goes into index.html) ---------- */
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 8px;
+      padding: 12px 24px;
+      background: var(--brand); color: var(--brand-ink);
+    }
+    .topbar .brand { font-weight: 700; letter-spacing: .2px; }
+    .topbar nav a {
+      color: var(--brand-ink); text-decoration: none;
+      padding: 6px 12px; border-radius: 6px; margin-left: 4px;
+      opacity: .85;
+    }
+    .topbar nav a:hover { opacity: 1; background: rgba(255,255,255,.12); }
+    .topbar nav a.active { opacity: 1; background: rgba(255,255,255,.2); font-weight: 600; }
+
+    /* ---------- page layout ---------- */
+    main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 8px 0 4px; font-size: 1.6rem; }
+    .subtitle { margin: 0 0 20px; color: var(--muted); }
+    .subtitle a { color: var(--brand); }
+
+    /* summary cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+    .card .num { display: block; font-size: 1.8rem; font-weight: 700; }
+    .card .label { color: var(--muted); font-size: .9rem; }
+
+    /* search + reload */
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+    .toolbar input {
+      flex: 1 1 260px; padding: 9px 12px; font-size: .95rem;
+      border: 1px solid var(--line); border-radius: 8px; background: var(--card);
+    }
+    .toolbar button {
+      padding: 9px 16px; font-size: .95rem; cursor: pointer;
+      border: 1px solid var(--brand); border-radius: 8px;
+      background: var(--brand); color: var(--brand-ink);
+    }
+    .status { color: var(--muted); font-size: .85rem; }
+
+    /* messages (errors, "no alerts", etc.) */
+    .message { padding: 14px 16px; border-radius: 10px; margin-bottom: 16px; border: 1px solid; }
+    .message.error { background: var(--danger-bg); border-color: #f5c2bd; color: var(--danger); }
+    .message.ok    { background: var(--ok-bg);     border-color: #b9e0c6; color: var(--ok); }
+    .message code  { background: rgba(0,0,0,.06); padding: 1px 5px; border-radius: 4px; }
+
+    /* table */
+    .table-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { background: #f1ece6; font-weight: 600; white-space: nowrap; }
+    tbody tr:hover { background: #faf8f5; }
+    tbody tr:last-child td { border-bottom: none; }
+    td.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .85rem; }
+    td.nowrap { white-space: nowrap; }          /* IPs and timestamps stay on one line */
+    td.wrap { word-break: break-all; }          /* long URLs may wrap anywhere */
+
+    /* coloured labels */
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .8rem; font-weight: 600; white-space: nowrap; }
+    .badge.rule   { background: var(--warn-bg);   color: var(--warn); }
+    .badge.s4xx   { background: var(--warn-bg);   color: var(--warn); }
+    .badge.s5xx, .badge.high, .badge.critical { background: var(--danger-bg); color: var(--danger); }
+    .badge.s2xx, .badge.low   { background: var(--ok-bg); color: var(--ok); }
+
+    details summary { cursor: pointer; color: var(--brand); }
+    details pre { margin: 6px 0 0; padding: 8px; background: #f6f3ef; border-radius: 6px; max-height: 240px; overflow: auto; font-size: .8rem; }
+
+    footer { max-width: 1100px; margin: 0 auto; padding: 8px 24px 32px; color: var(--muted); font-size: .85rem; }
+    footer a { color: var(--brand); }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">WoodCraft Log Monitor</div>
+    <nav>
+      <a href="index.html">Logs</a>
+      <a href="alerts.html" class="active">Alerts</a>
+      <a href="runbook.md" class="runbook-link">Runbook</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Security alerts</h1>
+    <p class="subtitle">
+      Log entries flagged by <code>detect.py</code>. When an alert appears, follow the
+      <a href="runbook.md" class="runbook-link">incident response runbook</a>.
+    </p>
+
+    <!-- Summary numbers. JavaScript fills these in after alerts.json loads. -->
+    <section class="cards">
+      <div class="card"><span class="num" id="count-alerts">–</span><span class="label">Alerts</span></div>
+      <div class="card"><span class="num" id="count-ips">–</span><span class="label">Unique source IPs</span></div>
+      <div class="card"><span class="num" id="count-rules">–</span><span class="label">Rules triggered</span></div>
+    </section>
+
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Filter by IP, rule, path, status…" aria-label="Filter alerts">
+      <button id="reload" type="button">Reload</button>
+      <span id="status" class="status"></span>
+    </div>
+
+    <div id="message" class="message" hidden></div>
+
+    <div class="table-wrap" id="table-wrap">
+      <table id="alerts-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer>
+    Data source: <code>alerts.json</code>, generated by <code>detect.py</code>.
+    Run the script again and push to update this page.
+  </footer>
+
+  <script>
+    // =====================================================================
+    // 1. SETTINGS
+    // =====================================================================
+    const ALERTS_FILE = 'alerts.json';
+    let lastLoaded = '';   // e.g. "Last loaded 10:42:05", shown next to the Reload button
+
+    // detect.py might call the same idea by different names (e.g. "ip" or "source_ip").
+    // These lists let the page understand several common naming styles.
+    const IP_KEYS   = ['ip', 'source_ip', 'src_ip', 'client_ip', 'remote_addr'];
+    const RULE_KEYS = ['rule', 'rule_name', 'alert', 'alert_type', 'type', 'reason'];
+
+    // Columns that should appear first, in this order. Any other keys come after them.
+    const PREFERRED_ORDER = [
+      ...RULE_KEYS, 'severity', ...IP_KEYS,
+      'timestamp', 'time', 'first_seen', 'last_seen',
+      'username', 'user', 'method', 'request', 'path', 'url',
+      'status', 'count', 'attempts', 'size', 'message', 'details'
+    ];
+
+    // =====================================================================
+    // 2. HELPER FUNCTIONS
+    // =====================================================================
+
+    // Return the value of the first key in `keys` that the object has.
+    function pick(obj, keys) {
+      for (const k of keys) {
+        if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return obj[k];
+      }
+      return undefined;
+    }
+
+    // alerts.json can have different shapes depending on how detect.py was written.
+    // This function turns any of them into one simple list of alert objects.
+    function extractAlerts(data) {
+      let list = [];
+
+      if (Array.isArray(data)) {
+        // Shape A: [ {...}, {...} ]  (a plain list)
+        list = data;
+      } else if (data && typeof data === 'object') {
+        // Shape B: { "summary": ..., "alerts": [ ... ] }  (list inside a named key)
+        const namedKey = ['alerts', 'matches', 'results', 'flagged', 'entries']
+          .find(k => Array.isArray(data[k]));
+
+        if (namedKey) {
+          list = data[namedKey];
+        } else {
+          // Shape C: { "404_burst": [ ... ], "failed_login": [ ... ] }  (one list per rule)
+          for (const [ruleName, items] of Object.entries(data)) {
+            if (!Array.isArray(items)) continue;
+            for (const item of items) {
+              list.push(typeof item === 'object' && item !== null
+                ? { rule: ruleName, ...item }
+                : { rule: ruleName, entry: item });
+            }
+          }
+        }
+      }
+
+      // If an alert is just a text line (a string), wrap it in an object.
+      return list.map(item => (typeof item === 'object' && item !== null) ? item : { entry: String(item) });
+    }
+
+    // Work out which columns to show, from all the keys found in the alerts.
+    function getColumns(alerts) {
+      const keys = [];
+      for (const alert of alerts) {
+        for (const k of Object.keys(alert)) {
+          if (!keys.includes(k)) keys.push(k);
+        }
+      }
+      const rank = k => {
+        const i = PREFERRED_ORDER.indexOf(k);
+        return i === -1 ? PREFERRED_ORDER.length : i;
+      };
+      // Sort by preferred position; keys not in the list keep their original order.
+      return keys
+        .map((k, i) => ({ k, i }))
+        .sort((a, b) => rank(a.k) - rank(b.k) || a.i - b.i)
+        .map(x => x.k);
+    }
+
+    // Build the contents of one table cell.
+    // SECURITY: log data comes from strangers on the internet. An attacker can request a URL
+    // that contains a script tag. If we used innerHTML, that script could run on our page
+    // (this is called XSS, cross-site scripting). So we only ever use textContent for data.
+    function makeCell(key, value) {
+      const td = document.createElement('td');
+
+      if (value === undefined || value === null || value === '') {
+        td.textContent = '—';
+        return td;
+      }
+
+      // Nested data (e.g. a list of the log lines behind one alert): show it collapsible.
+      if (typeof value === 'object') {
+        const details = document.createElement('details');
+        const summary = document.createElement('summary');
+        summary.textContent = Array.isArray(value) ? `${value.length} item(s)` : 'details';
+        const pre = document.createElement('pre');
+        pre.textContent = JSON.stringify(value, null, 2);
+        details.append(summary, pre);
+        td.append(details);
+        return td;
+      }
+
+      const text = String(value);
+
+      if (RULE_KEYS.includes(key)) {
+        td.append(badge(text, 'rule'));
+      } else if (key === 'status' && /^\d{3}$/.test(text)) {
+        td.append(badge(text, 's' + text[0] + 'xx'));        // 404 -> class "s4xx"
+      } else if (key === 'severity') {
+        td.append(badge(text, text.toLowerCase()));
+      } else {
+        td.textContent = text;
+        if (IP_KEYS.includes(key) || ['timestamp', 'time', 'first_seen', 'last_seen'].includes(key)) {
+          td.classList.add('mono', 'nowrap');
+        } else if (['request', 'path', 'url', 'entry'].includes(key)) {
+          td.classList.add('mono', 'wrap');
+        }
+      }
+      return td;
+    }
+
+    // "source_ip" -> "Source IP", "first_seen" -> "First Seen"
+    function columnLabel(key) {
+      return key
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, ch => ch.toUpperCase())
+        .replace(/\bIp\b/g, 'IP');
+    }
+
+    function badge(text, cls) {
+      const span = document.createElement('span');
+      span.className = 'badge ' + cls;
+      span.textContent = text;
+      return span;
+    }
+
+    function showMessage(kind, html) {
+      // The messages below are written by us, not taken from log data, so innerHTML is safe here.
+      const box = document.getElementById('message');
+      box.className = 'message ' + kind;
+      box.innerHTML = html;
+      box.hidden = false;
+    }
+
+    function hideMessage() {
+      document.getElementById('message').hidden = true;
+    }
+
+    // =====================================================================
+    // 3. DRAW THE PAGE
+    // =====================================================================
+    function render(alerts) {
+      const thead = document.querySelector('#alerts-table thead');
+      const tbody = document.querySelector('#alerts-table tbody');
+      thead.innerHTML = '';
+      tbody.innerHTML = '';
+
+      // Summary cards
+      const ips   = new Set(alerts.map(a => pick(a, IP_KEYS)).filter(Boolean));
+      const rules = new Set(alerts.map(a => pick(a, RULE_KEYS)).filter(Boolean));
+      document.getElementById('count-alerts').textContent = alerts.length;
+      document.getElementById('count-ips').textContent    = ips.size;
+      document.getElementById('count-rules').textContent  = rules.size;
+
+      if (alerts.length === 0) {
+        document.getElementById('table-wrap').hidden = true;
+        showMessage('ok', '✅ <strong>No alerts right now.</strong> detect.py did not flag anything in the current logs.');
+        setStatus(lastLoaded);
+        return;
+      }
+      document.getElementById('table-wrap').hidden = false;
+
+      // Header row
+      const columns = getColumns(alerts);
+      const headRow = document.createElement('tr');
+      for (const col of ['#', ...columns]) {
+        const th = document.createElement('th');
+        th.textContent = columnLabel(col);
+        headRow.append(th);
+      }
+      thead.append(headRow);
+
+      // One row per alert
+      alerts.forEach((alert, index) => {
+        const tr = document.createElement('tr');
+        const num = document.createElement('td');
+        num.textContent = index + 1;
+        tr.append(num);
+        for (const col of columns) tr.append(makeCell(col, alert[col]));
+        tbody.append(tr);
+      });
+
+      applyFilter();
+    }
+
+    // Hide rows that don't contain the text typed in the search box.
+    function applyFilter() {
+      const query = document.getElementById('search').value.trim().toLowerCase();
+      let shown = 0;
+      document.querySelectorAll('#alerts-table tbody tr').forEach(tr => {
+        const match = tr.textContent.toLowerCase().includes(query);
+        tr.hidden = !match;
+        if (match) shown++;
+      });
+      const total = document.querySelectorAll('#alerts-table tbody tr').length;
+      setStatus(query ? `Showing ${shown} of ${total}` : lastLoaded);
+    }
+
+    function setStatus(text) {
+      document.getElementById('status').textContent = text;
+    }
+
+    // =====================================================================
+    // 4. LOAD alerts.json
+    // =====================================================================
+    async function loadAlerts() {
+      hideMessage();
+      setStatus('Loading…');
+      try {
+        // "?t=..." makes every URL unique, so the browser can't show an old cached copy.
+        const response = await fetch(`${ALERTS_FILE}?t=${Date.now()}`, { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: could not find ${ALERTS_FILE}`);
+        }
+        const data = await response.json();       // fails if the file isn't valid JSON
+        const alerts = extractAlerts(data);
+        lastLoaded = 'Last loaded ' + new Date().toLocaleTimeString();
+        render(alerts);
+      } catch (err) {
+        console.error(err);
+        setStatus('');
+        document.getElementById('table-wrap').hidden = true;
+
+        if (location.protocol === 'file:') {
+          // Browsers block fetch() for pages opened straight from disk (file://).
+          showMessage('error',
+            '<strong>Open this page through a web server.</strong> Browsers block <code>fetch()</code> ' +
+            'when a page is opened directly from your disk. In the project folder run ' +
+            '<code>python -m http.server 8000</code>, then open ' +
+            '<code>http://localhost:8000/alerts.html</code>.');
+        } else if (err instanceof SyntaxError) {
+          showMessage('error',
+            '<strong>alerts.json is not valid JSON.</strong> Run <code>python detect.py</code> again, ' +
+            'or check the file for a missing comma or bracket.');
+        } else {
+          showMessage('error',
+            `<strong>Could not load ${ALERTS_FILE}.</strong> Make sure the file is in the same folder as ` +
+            'alerts.html and has been committed and pushed. The file name is case-sensitive on GitHub Pages.');
+        }
+      }
+    }
+
+    // =====================================================================
+    // 5. START
+    // =====================================================================
+
+    // GitHub Pages runs Jekyll, which turns runbook.md into a web page at runbook.html.
+    // A local test server has no runbook.html, so there we link to the raw .md file instead.
+    if (location.hostname.endsWith('github.io')) {
+      document.querySelectorAll('.runbook-link').forEach(a => a.href = 'runbook.html');
+    }
+
+    document.getElementById('search').addEventListener('input', applyFilter);
+    document.getElementById('reload').addEventListener('click', loadAlerts);
+    loadAlerts();
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+Task 4 - Incident runbook, demo site and hand-over
+
+What I did
+- Wrote runbook.md, an incident response guide for WoodCraft staff with five main steps
+  (detection, triage, evidence collection, mitigation, communication) plus a lessons-learned
+  review. It includes a severity table, a contacts table, ready-to-use server commands and an
+  incident log template.
+- Built alerts.html, which loads alerts.json with fetch() and shows the flagged entries in a
+  table, with summary counts (alerts, unique IPs, rules triggered) and a search filter.
+- Added a navigation bar to index.html and alerts.html so staff can move between Logs,
+  Alerts and Runbook.
+- Enabled GitHub Pages (main branch, root folder) and checked that both pages work at the live URL.
+- Updated the README with the demo links, project structure, update instructions and a
+  hand-over note for WoodCraft.
+
+Why
+- The runbook means staff know exactly what to do when an alert fires. Its order (copy the
+  evidence before blocking or changing anything) protects the information needed to
+  understand an attack.
+- alerts.html displays log data with textContent, not innerHTML, because log entries are
+  attacker-controlled. Malicious text in a URL therefore can't run as code on our page (XSS).
+- The page avoids cached copies of alerts.json, so staff always see the latest alerts.
+- GitHub Pages hosts static files for free with no server to maintain, which suits a
+  lightweight demo. The README notes that real logs should be hosted privately, because a
+  Pages site is public.
+
+Live demo: https://USERNAME.github.io/REPO/
