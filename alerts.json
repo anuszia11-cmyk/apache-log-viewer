@@ -1,1 +1,112 @@
-[]
+[
+  {
+    "ip": "198.51.100.23",
+    "timestamp": "30/Oct/2026:09:10:01 +0000",
+    "request": "GET /admin HTTP/1.1",
+    "status": 404,
+    "size": 312,
+    "alert_rule": "R1_404_BURST",
+    "alert_severity": "medium",
+    "alert_reason": "5 '404 Not Found' responses from 198.51.100.23 (rule: >= 3 within 5 min)",
+    "source_file": "logs.json"
+  },
+  {
+    "ip": "198.51.100.23",
+    "timestamp": "30/Oct/2026:09:10:15 +0000",
+    "request": "GET /wp-login.php HTTP/1.1",
+    "status": 404,
+    "size": 312,
+    "alert_rule": "R1_404_BURST",
+    "alert_severity": "medium",
+    "alert_reason": "5 '404 Not Found' responses from 198.51.100.23 (rule: >= 3 within 5 min)",
+    "source_file": "logs.json"
+  },
+  {
+    "ip": "198.51.100.23",
+    "timestamp": "30/Oct/2026:09:10:31 +0000",
+    "request": "GET /.env HTTP/1.1",
+    "status": 404,
+    "size": 312,
+    "alert_rule": "R1_404_BURST",
+    "alert_severity": "medium",
+    "alert_reason": "5 '404 Not Found' responses from 198.51.100.23 (rule: >= 3 within 5 min)",
+    "source_file": "logs.json"
+  },
+  {
+    "ip": "198.51.100.23",
+    "timestamp": "30/Oct/2026:09:10:48 +0000",
+    "request": "GET /backup.zip HTTP/1.1",
+    "status": 404,
+    "size": 312,
+    "alert_rule": "R1_404_BURST",
+    "alert_severity": "medium",
+    "alert_reason": "5 '404 Not Found' responses from 198.51.100.23 (rule: >= 3 within 5 min)",
+    "source_file": "logs.json"
+  },
+  {
+    "ip": "198.51.100.23",
+    "timestamp": "30/Oct/2026:09:11:20 +0000",
+    "request": "GET /phpmyadmin/ HTTP/1.1",
+    "status": 404,
+    "size": 312,
+    "alert_rule": "R1_404_BURST",
+    "alert_severity": "medium",
+    "alert_reason": "5 '404 Not Found' responses from 198.51.100.23 (rule: >= 3 within 5 min)",
+    "source_file": "logs.json"
+  },
+  {
+    "ip": "203.0.113.45",
+    "timestamp": "30/Oct/2026:09:20:02 +0000",
+    "request": "POST /login HTTP/1.1",
+    "status": 401,
+    "size": 298,
+    "alert_rule": "R2_REPEATED_FAILED_LOGIN",
+    "alert_severity": "high",
+    "alert_reason": "5 failed logins from 203.0.113.45 (rule: >= 5 within 10 min)",
+    "source_file": "logs.json"
+  },
+  {
+    "ip": "203.0.113.45",
+    "timestamp": "30/Oct/2026:09:20:09 +0000",
+    "request": "POST /login HTTP/1.1",
+    "status": 401,
+    "size": 298,
+    "alert_rule": "R2_REPEATED_FAILED_LOGIN",
+    "alert_severity": "high",
+    "alert_reason": "5 failed logins from 203.0.113.45 (rule: >= 5 within 10 min)",
+    "source_file": "logs.json"
+  },
+  {
+    "ip": "203.0.113.45",
+    "timestamp": "30/Oct/2026:09:20:17 +0000",
+    "request": "POST /login HTTP/1.1",
+    "status": 401,
+    "size": 298,
+    "alert_rule": "R2_REPEATED_FAILED_LOGIN",
+    "alert_severity": "high",
+    "alert_reason": "5 failed logins from 203.0.113.45 (rule: >= 5 within 10 min)",
+    "source_file": "logs.json"
+  },
+  {
+    "ip": "203.0.113.45",
+    "timestamp": "30/Oct/2026:09:20:26 +0000",
+    "request": "POST /login HTTP/1.1",
+    "status": 401,
+    "size": 298,
+    "alert_rule": "R2_REPEATED_FAILED_LOGIN",
+    "alert_severity": "high",
+    "alert_reason": "5 failed logins from 203.0.113.45 (rule: >= 5 within 10 min)",
+    "source_file": "logs.json"
+  },
+  {
+    "ip": "203.0.113.45",
+    "timestamp": "30/Oct/2026:09:20:41 +0000",
+    "request": "POST /login HTTP/1.1",
+    "status": 401,
+    "size": 298,
+    "alert_rule": "R2_REPEATED_FAILED_LOGIN",
+    "alert_severity": "high",
+    "alert_reason": "5 failed logins from 203.0.113.45 (rule: >= 5 within 10 min)",
+    "source_file": "logs.json"
+  }
+]

@@ -31,6 +31,7 @@ Fill these in before you need them. Entries marked "to be confirmed" must be rep
 | Portal administrator | Has server access, blocks IPs, resets accounts | Anas Zia (Ezitech intern, during the demo) | anuszia11@gmail.com |
 | Management contact | Approves any message to customers or authorities | WoodCraft Operations Manager (to be confirmed) | management@woodcraft-furniture.example |
 | Hosting provider | Network-level blocking, server snapshots | Hosting provider support (to be confirmed) | support@hosting-provider.example |
+
 ## Severity levels
 
 | Level | Meaning | Example | Respond within |
@@ -46,14 +47,16 @@ Fill these in before you need them. Entries marked "to be confirmed" must be rep
 
 **How alerts reach you**
 
-1. `detect.py` reads the server log (`logs.json`) and checks it against two rules:
+1. `detect.py` reads the logs (`logs.json`, plus `attack_logs.json` if present) and checks them against two rules:
 
-   | Rule | What it looks for | What it usually means |
-   |---|---|---|
-   | **404 burst** | Many `404 Not Found` responses for one IP within 5 minutes | Someone is scanning for hidden pages, old admin panels or backup files |
-   | **Repeated failed logins** | Several failed login attempts, e.g. `401`/`403` on the login page or SSH `Failed password` | Password guessing (brute force) or reused stolen passwords (credential stuffing) |
+   | Rule | What it looks for | Alert severity | What it usually means |
+   |---|---|---|---|
+   | **R1_404_BURST** | 3 or more `404 Not Found` responses for one IP within 5 minutes | Medium | Someone is scanning for hidden pages, old admin panels or backup files |
+   | **R2_REPEATED_FAILED_LOGIN** | 5 or more failed logins from one IP within 10 minutes (`401`/`403` on a login URL, or SSH `Failed password` / `Invalid user`) | High | Password guessing (brute force) or reused stolen passwords (credential stuffing) |
 
-2. It writes any matches to `alerts.json`.
+   The alert severity is a starting point. Triage (step 2) decides the real severity of the incident.
+
+2. It writes every flagged log entry to `alerts.json`, with the rule, severity and reason attached.
 3. The **Alerts** page (`alerts.html`) on the demo site shows those matches in a table.
 
 **To check for new alerts by hand**

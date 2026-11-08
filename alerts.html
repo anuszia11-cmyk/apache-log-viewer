@@ -54,7 +54,7 @@
     .topbar nav a.active { opacity: 1; background: rgba(255,255,255,.2); font-weight: 600; }
 
     /* ---------- page layout ---------- */
-    main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    main { max-width: 1360px; margin: 0 auto; padding: 24px; }
     h1 { margin: 8px 0 4px; font-size: 1.6rem; }
     .subtitle { margin: 0 0 20px; color: var(--muted); }
     .subtitle a { color: var(--brand); }
@@ -93,7 +93,8 @@
     tbody tr:last-child td { border-bottom: none; }
     td.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .85rem; }
     td.nowrap { white-space: nowrap; }          /* IPs and timestamps stay on one line */
-    td.wrap { word-break: break-all; }          /* long URLs may wrap anywhere */
+    td.wrap { overflow-wrap: anywhere; min-width: 170px; }  /* wrap at spaces, break long URLs only if needed */
+    td.reason { min-width: 230px; color: var(--muted); }   /* the explanation from detect.py */
 
     /* coloured labels */
     .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .8rem; font-weight: 600; white-space: nowrap; }
@@ -101,11 +102,12 @@
     .badge.s4xx   { background: var(--warn-bg);   color: var(--warn); }
     .badge.s5xx, .badge.high, .badge.critical { background: var(--danger-bg); color: var(--danger); }
     .badge.s2xx, .badge.low   { background: var(--ok-bg); color: var(--ok); }
+    .badge.medium { background: var(--warn-bg); color: var(--warn); }
 
     details summary { cursor: pointer; color: var(--brand); }
     details pre { margin: 6px 0 0; padding: 8px; background: #f6f3ef; border-radius: 6px; max-height: 240px; overflow: auto; font-size: .8rem; }
 
-    footer { max-width: 1100px; margin: 0 auto; padding: 8px 24px 32px; color: var(--muted); font-size: .85rem; }
+    footer { max-width: 1360px; margin: 0 auto; padding: 8px 24px 32px; color: var(--muted); font-size: .85rem; }
     footer a { color: var(--brand); }
   </style>
 </head>
@@ -129,7 +131,7 @@
 
     <!-- Summary numbers. JavaScript fills these in after alerts.json loads. -->
     <section class="cards">
-      <div class="card"><span class="num" id="count-alerts">–</span><span class="label">Alerts</span></div>
+      <div class="card"><span class="num" id="count-alerts">–</span><span class="label">Flagged log entries</span></div>
       <div class="card"><span class="num" id="count-ips">–</span><span class="label">Unique source IPs</span></div>
       <div class="card"><span class="num" id="count-rules">–</span><span class="label">Rules triggered</span></div>
     </section>
@@ -165,14 +167,16 @@
     // detect.py might call the same idea by different names (e.g. "ip" or "source_ip").
     // These lists let the page understand several common naming styles.
     const IP_KEYS   = ['ip', 'source_ip', 'src_ip', 'client_ip', 'remote_addr'];
-    const RULE_KEYS = ['rule', 'rule_name', 'alert', 'alert_type', 'type', 'reason'];
+    const RULE_KEYS = ['alert_rule', 'rule', 'rule_name', 'alert', 'alert_type', 'type'];
+    const SEVERITY_KEYS = ['alert_severity', 'severity'];
 
     // Columns that should appear first, in this order. Any other keys come after them.
     const PREFERRED_ORDER = [
-      ...RULE_KEYS, 'severity', ...IP_KEYS,
+      ...RULE_KEYS, ...SEVERITY_KEYS, ...IP_KEYS,
       'timestamp', 'time', 'first_seen', 'last_seen',
       'username', 'user', 'method', 'request', 'path', 'url',
-      'status', 'count', 'attempts', 'size', 'message', 'details'
+      'status', 'count', 'attempts', 'size',
+      'alert_reason', 'reason', 'message', 'details', 'event', 'service', 'source_file', 'source'
     ];
 
     // =====================================================================
@@ -268,22 +272,27 @@
         td.append(badge(text, 'rule'));
       } else if (key === 'status' && /^\d{3}$/.test(text)) {
         td.append(badge(text, 's' + text[0] + 'xx'));        // 404 -> class "s4xx"
-      } else if (key === 'severity') {
+      } else if (SEVERITY_KEYS.includes(key)) {
         td.append(badge(text, text.toLowerCase()));
       } else {
         td.textContent = text;
         if (IP_KEYS.includes(key) || ['timestamp', 'time', 'first_seen', 'last_seen'].includes(key)) {
           td.classList.add('mono', 'nowrap');
-        } else if (['request', 'path', 'url', 'entry'].includes(key)) {
+        } else if (['request', 'path', 'url', 'entry', 'message'].includes(key)) {
           td.classList.add('mono', 'wrap');
+        } else if (['alert_reason', 'reason', 'details'].includes(key)) {
+          td.classList.add('reason');
+        } else if (key === 'source_file') {
+          td.classList.add('mono', 'nowrap');
         }
       }
       return td;
     }
 
-    // "source_ip" -> "Source IP", "first_seen" -> "First Seen"
+    // "source_ip" -> "Source IP", "alert_rule" -> "Rule"
     function columnLabel(key) {
       return key
+        .replace(/^alert_/, '')
         .replace(/_/g, ' ')
         .replace(/\b\w/g, ch => ch.toUpperCase())
         .replace(/\bIp\b/g, 'IP');

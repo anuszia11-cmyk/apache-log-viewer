@@ -9,8 +9,12 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 30px;
+            margin: 0;
             background: #f4f4f4;
+        }
+
+        main {
+            margin: 30px;
         }
 
         h1 {
@@ -46,11 +50,38 @@
             color: red;
             text-align: center;
         }
+
+        /* Top navigation bar - the same menu is used on alerts.html */
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 8px;
+            padding: 12px 24px;
+            background: #6f4426; color: #ffffff;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        .topbar .brand { font-weight: 700; letter-spacing: .2px; }
+        .topbar nav a {
+            color: #ffffff; text-decoration: none;
+            padding: 6px 12px; border-radius: 6px; margin-left: 4px;
+            opacity: .85;
+        }
+        .topbar nav a:hover { opacity: 1; background: rgba(255,255,255,.12); }
+        .topbar nav a.active { opacity: 1; background: rgba(255,255,255,.2); font-weight: 600; }
     </style>
 </head>
 
 <body>
 
+    <header class="topbar">
+        <div class="brand">WoodCraft Log Monitor</div>
+        <nav>
+            <a href="index.html" class="active">Logs</a>
+            <a href="alerts.html">Alerts</a>
+            <a href="runbook.md" class="runbook-link">Runbook</a>
+        </nav>
+    </header>
+
+    <main>
     <h1>WoodCraft Security Log Viewer</h1>
 
     <p>Sample server activity logs</p>
@@ -74,9 +105,16 @@
     </table>
 
     <p id="message" class="error"></p>
+    </main>
 
     <script>
-   fetch("https://anuszia11-cmyk.github.io/apache-log-viewer/logs.json")
+        // On GitHub Pages, runbook.md is published as a web page at runbook.html.
+        if (location.hostname.endsWith('github.io')) {
+            document.querySelectorAll('.runbook-link').forEach(a => a.href = 'runbook.html');
+        }
+
+        // Relative path: works on GitHub Pages AND on a local test server.
+        fetch("logs.json")
             .then(response => {
                 if (!response.ok) {
                     throw new Error("Could not load logs.json");
